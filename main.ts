@@ -18,4 +18,14 @@ if (written !== LINE) {
 if (written.length < 1 || written.length > 200) {
   throw new Error(`output length ${written.length} outside 1-200 chars`);
 }
+// Byte-level verification: re-read as a raw Buffer and compare bytes
+// against the UTF-8 encoding of the expected line, so no silent
+// encoding or newline mutation can slip past the string check above.
+const writtenBytes = readFileSync(target);
+const expectedBytes = Buffer.from(LINE, "utf8");
+if (!writtenBytes.equals(expectedBytes)) {
+  throw new Error(
+    `output bytes mismatch: entry.txt bytes differ from expected UTF-8 bytes (${writtenBytes.length} vs ${expectedBytes.length})`,
+  );
+}
 console.log(`wrote ${target} (${LINE.length} chars)`);
